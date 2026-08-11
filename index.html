@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#4f9d69" />
+<title>Gluten-Checker 🔍</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🌾%3C/text%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🌾%3C/text%3E%3C/svg%3E" />
+<link rel="manifest" href="manifest.json" />
+<style>
+  :root {
+    --green: #4f9d69;
+    --green-dark: #3a7a4f;
+    --red: #e04b4b;
+    --red-dark: #b83535;
+    --yellow: #e6a935;
+    --yellow-dark: #b9821e;
+    --bg: #f4f7f5;
+    --card: #ffffff;
+    --text: #24322b;
+    --muted: #6b7c73;
+    --border: #dfe7e2;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .app {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 20px 18px 60px;
+    min-height: 100vh;
+  }
+  header {
+    text-align: center;
+    padding: 12px 0 20px;
+  }
+  header .logo { font-size: 52px; line-height: 1; }
+  header h1 { font-size: 26px; margin: 8px 0 4px; }
+  header p { color: var(--muted); margin: 0; font-size: 15px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 18px;
+    box-shadow: 0 2px 10px rgba(36,50,43,0.04);
+  }
+
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    border: none;
+    border-radius: 14px;
+    padding: 18px 20px;
+    font-size: 19px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    margin-bottom: 12px;
+    transition: transform .08s ease, filter .15s ease;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn:last-child { margin-bottom: 0; }
+  .btn-primary { background: var(--green); }
+  .btn-primary:hover { filter: brightness(1.05); }
+  .btn-secondary { background: #5c7d8a; }
+  .btn-icon { font-size: 24px; }
+
+  input[type="file"] { display: none; }
+
+  #preview-wrap { text-align: center; margin-top: 6px; }
+  #preview {
+    max-width: 100%;
+    max-height: 320px;
+    border-radius: 14px;
+    display: none;
+    margin: 0 auto;
+    border: 1px solid var(--border);
+  }
+
+  .status {
+    text-align: center;
+    padding: 24px 16px;
+    color: var(--muted);
+    display: none;
+  }
+  .spinner {
+    width: 44px; height: 44px;
+    border: 5px solid var(--border);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    margin: 0 auto 14px;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .progress-bar {
+    height: 8px; background: var(--border); border-radius: 6px;
+    overflow: hidden; margin: 12px auto 0; max-width: 260px;
+  }
+  .progress-fill { height: 100%; width: 0%; background: var(--green); transition: width .3s ease; }
+
+  .result { display: none; }
+  .result-banner {
+    border-radius: 16px;
+    padding: 26px 20px;
+    text-align: center;
+    color: #fff;
+    margin-bottom: 16px;
+  }
+  .result-banner .big-icon { font-size: 60px; line-height: 1; }
+  .result-banner .headline { font-size: 26px; font-weight: 800; margin: 10px 0 4px; }
+  .result-banner .sub { font-size: 16px; opacity: 0.95; }
+  .r-red { background: linear-gradient(135deg, var(--red), var(--red-dark)); }
+  .r-green { background: linear-gradient(135deg, var(--green), var(--green-dark)); }
+  .r-yellow { background: linear-gradient(135deg, var(--yellow), var(--yellow-dark)); }
+
+  .found-list { margin: 0; padding: 0; list-style: none; }
+  .found-list li {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: 10px;
+    background: #fdecec; color: var(--red-dark);
+    margin-bottom: 8px; font-weight: 600;
+  }
+  .found-list li.warn { background: #fdf3e0; color: var(--yellow-dark); }
+  .found-list li .tag { font-size: 13px; opacity: 0.8; font-weight: 500; }
+
+  .section-title { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 18px 0 10px; }
+
+  details { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+  summary { cursor: pointer; font-weight: 600; color: var(--muted); font-size: 14px; }
+  .ocr-text {
+    margin-top: 10px; font-size: 13px; color: var(--muted);
+    background: var(--bg); padding: 12px; border-radius: 10px;
+    max-height: 180px; overflow-y: auto; white-space: pre-wrap; word-break: break-word;
+  }
+
+  .disclaimer {
+    font-size: 13px; color: var(--muted); text-align: center;
+    padding: 4px 8px; line-height: 1.5;
+  }
+  .disclaimer strong { color: var(--yellow-dark); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">🌾🔍</div>
+    <h1>Gluten-Checker</h1>
+    <p>Foto von der Verpackung machen – ich schaue nach Gluten!</p>
+  </header>
+
+  <!-- Upload-Karte -->
+  <div class="card" id="upload-card">
+    <button class="btn btn-primary" id="camera-btn">
+      <span class="btn-icon">📷</span> Foto machen
+    </button>
+    <button class="btn btn-secondary" id="gallery-btn">
+      <span class="btn-icon">🖼️</span> Bild auswählen
+    </button>
+    <input type="file" id="camera-input" accept="image/*" capture="environment" />
+    <input type="file" id="gallery-input" accept="image/*" />
+    <div id="preview-wrap">
+      <img id="preview" alt="Vorschau" />
+    </div>
+  </div>
+
+  <!-- Status / Laden -->
+  <div class="status" id="status">
+    <div class="spinner"></div>
+    <div id="status-text">Ich lese die Zutaten…</div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+
+  <!-- Ergebnis -->
+  <div class="result" id="result">
+    <div class="result-banner" id="banner">
+      <div class="big-icon" id="banner-icon"></div>
+      <div class="headline" id="banner-headline"></div>
+      <div class="sub" id="banner-sub"></div>
+    </div>
+
+    <div id="findings"></div>
+
+    <details id="ocr-details">
+      <summary>Erkannter Text anzeigen</summary>
+      <div class="ocr-text" id="ocr-text"></div>
+    </details>
+
+    <button class="btn btn-primary" id="again-btn" style="margin-top:16px;">
+      <span class="btn-icon">🔄</span> Nächstes Produkt prüfen
+    </button>
+  </div>
+
+  <p class="disclaimer">
+    <strong>Wichtig:</strong> Diese App ist eine Hilfe, aber kein Ersatz für das genaue Lesen der
+    Verpackung. Bei Unsicherheit oder unklarem Foto immer die Zutatenliste selbst prüfen
+    oder Mama/Papa fragen. 💚
+  </p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="gluten-data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
